@@ -3,30 +3,28 @@ import pandas as pd
 
 BASE = "https://api.mexc.com"
 
-
 def get_usdt_pairs():
     r = requests.get(f"{BASE}/api/v3/exchangeInfo", timeout=10)
     data = r.json()
 
-    pairs = []
-
-    for s in data.get("symbols", []):
-        if s.get("quoteAsset") == "USDT":
-            pairs.append(s.get("symbol"))
-
-    return pairs
+    return [
+        s.get("symbol")
+        for s in data.get("symbols", [])
+        if s.get("quoteAsset") == "USDT"
+    ]
 
 
 def get_klines(symbol, interval="15m", limit=100):
-    url = f"{BASE}/api/v3/klines"
+    r = requests.get(
+        f"{BASE}/api/v3/klines",
+        params={
+            "symbol": symbol,
+            "interval": interval,
+            "limit": limit
+        },
+        timeout=10
+    )
 
-    params = {
-        "symbol": symbol,
-        "interval": interval,
-        "limit": limit
-    }
-
-    r = requests.get(url, params=params, timeout=10)
     data = r.json()
 
     if not isinstance(data, list):
@@ -34,10 +32,10 @@ def get_klines(symbol, interval="15m", limit=100):
 
     df = pd.DataFrame(data, columns=[
         "time","open","high","low","close","volume",
-        "close_time","qv","trades","tb","tq","ignore"
+        "ct","qv","trades","tb","tq","ignore"
     ])
 
-    for col in ["open","high","low","close","volume"]:
-        df[col] = pd.to_numeric(df[col], errors="coerce")
+    for c in ["open","high","low","close","volume"]:
+        df[c] = pd.to_numeric(df[c], errors="coerce")
 
     return df
