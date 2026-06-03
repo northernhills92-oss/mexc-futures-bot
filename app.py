@@ -1,10 +1,15 @@
-import streamlit as st
 import requests
+import streamlit as st
 
-url = "https://api.mexc.com/api/v3/exchangeInfo"
+data = requests.get(
+    "https://api.mexc.com/api/v3/exchangeInfo"
+).json()
 
-data = requests.get(url).json()
+usdt_pairs = []
 
-st.write("Symbols count:", len(data["symbols"]))
+for s in data["symbols"]:
+    if s.get("quoteAsset") == "USDT":
+        usdt_pairs.append(s["symbol"])
 
-st.write(data["symbols"][0])
+st.write("USDT pairs:", len(usdt_pairs))
+st.write(usdt_pairs[:20])
