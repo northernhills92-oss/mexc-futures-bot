@@ -1,0 +1,1 @@
+# mexc-futures-bot
