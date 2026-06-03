@@ -6,25 +6,26 @@ st.title("🚀 MEXC Futures Bot Dashboard")
 
 pairs = get_usdt_pairs()
 
+st.write("Pairs found:", len(pairs))
+
 results = []
 
-for symbol in pairs[:20]:  # limit for speed
+for symbol in pairs[:10]:
     try:
         df = get_klines(symbol)
         score = score_signal(df)
         results.append((symbol, score))
-    except:
-        continue
+    except Exception as e:
+        st.write(f"Error {symbol}: {e}")
 
-results.sort(key=lambda x: x[1], reverse=True)
+st.write("Results count:", len(results))
 
-best = results[0]
+if len(results) > 0:
+    results.sort(key=lambda x: x[1], reverse=True)
 
-st.subheader("🏆 Best Trade Candidate")
-st.write(best[0])
-st.write("Score:", best[1])
+    best = results[0]
 
-st.subheader("📊 Top Signals")
-
-for r in results[:10]:
-    st.write(r)
+    st.subheader("🏆 Best Trade Candidate")
+    st.write(best)
+else:
+    st.error("No valid results found.")
