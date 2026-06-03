@@ -1,6 +1,8 @@
 import streamlit as st
 import requests
 
+st.title("🚀 MEXC Futures Bot Dashboard")
+
 data = requests.get(
     "https://api.mexc.com/api/v3/exchangeInfo"
 ).json()
@@ -12,4 +14,5 @@ for s in data["symbols"]:
         pairs.append(s["symbol"])
 
 st.write("Pairs found:", len(pairs))
+st.write("First 20 pairs:")
 st.write(pairs[:20])
