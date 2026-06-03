@@ -4,16 +4,46 @@ import pandas as pd
 BASE = "https://api.mexc.com"
 
 def get_usdt_pairs():
-    url = f"{BASE}/api/v3/exchangeInfo"
-
-    data = requests.get(url).json()
+    data = requests.get(
+        f"{BASE}/api/v3/exchangeInfo"
+    ).json()
 
     pairs = []
 
     for s in data["symbols"]:
-        symbol = s.get("symbol", "")
-
-        if symbol.endswith("USDT"):
-            pairs.append(symbol)
+        if (
+            s.get("quoteAsset") == "USDT"
+            and s.get("status") == "1"
+        ):
+            pairs.append(s["symbol"])
 
     return pairs
+
+
+def get_klines(symbol, interval="15m", limit=100):
+    url = f"{BASE}/api/v3/klines"
+
+    params = {
+        "symbol": symbol,
+        "interval": interval,
+        "limit": limit
+    }
+
+    data = requests.get(url, params=params).json()
+
+    df = pd.DataFrame(
+        data,
+        columns=[
+            "time","open","high","low","close","volume",
+            "_1","_2","_3","_4","_5","_6"
+        ]
+    )
+
+    numeric_cols = [
+        "open","high","low","close","volume"
+    ]
+
+    for col in numeric_cols:
+        df[col] = pd.to_numeric(df[col])
+
+    return df
