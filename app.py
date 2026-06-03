@@ -1,6 +1,20 @@
 import streamlit as st
-from data.market import get_usdt_pairs
+import requests
 
-pairs = get_usdt_pairs()
+url = "https://api.mexc.com/api/v3/exchangeInfo"
 
-st.write("Pairs found:", len(pairs))
+try:
+    r = requests.get(url, timeout=10)
+
+    st.write("Status:", r.status_code)
+
+    data = r.json()
+
+    st.write("Symbols count:", len(data.get("symbols", [])))
+
+    if len(data.get("symbols", [])) > 0:
+        st.write("First symbol:")
+        st.json(data["symbols"][0])
+
+except Exception as e:
+    st.error(str(e))
