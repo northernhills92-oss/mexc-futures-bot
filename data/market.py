@@ -3,21 +3,7 @@ import pandas as pd
 
 BASE = "https://api.mexc.com"
 
-def get_usdt_pairs():
-    data = requests.get(
-        f"{BASE}/api/v3/exchangeInfo"
-    ).json()
 
-    pairs = []
-
-    for s in data["symbols"]:
-        if (
-            s.get("quoteAsset") == "USDT"
-            and s.get("status") == "1"
-        ):
-            pairs.append(s["symbol"])
-
-    return pairs
 
 
 def get_klines(symbol, interval="15m", limit=100):
@@ -28,7 +14,18 @@ def get_klines(symbol, interval="15m", limit=100):
         "interval": interval,
         "limit": limit
     }
+def get_usdt_pairs():
+    data = requests.get(
+        f"{BASE}/api/v3/exchangeInfo"
+    ).json()
 
+    pairs = []
+
+    for s in data["symbols"]:
+        if s.get("quoteAsset") == "USDT":
+            pairs.append(s["symbol"])
+
+    return pairs
     data = requests.get(url, params=params).json()
 
     df = pd.DataFrame(
