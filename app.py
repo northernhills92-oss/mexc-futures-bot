@@ -1,20 +1,15 @@
 import streamlit as st
 import requests
 
-url = "https://api.mexc.com/api/v3/exchangeInfo"
+data = requests.get(
+    "https://api.mexc.com/api/v3/exchangeInfo"
+).json()
 
-try:
-    r = requests.get(url, timeout=10)
+pairs = []
 
-    st.write("Status:", r.status_code)
+for s in data["symbols"]:
+    if s.get("quoteAsset") == "USDT":
+        pairs.append(s["symbol"])
 
-    data = r.json()
-
-    st.write("Symbols count:", len(data.get("symbols", [])))
-
-    if len(data.get("symbols", [])) > 0:
-        st.write("First symbol:")
-        st.json(data["symbols"][0])
-
-except Exception as e:
-    st.error(str(e))
+st.write("Pairs found:", len(pairs))
+st.write(pairs[:20])
