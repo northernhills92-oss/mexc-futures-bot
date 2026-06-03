@@ -4,41 +4,60 @@ from strategy.signal import score_signal
 
 st.title("🚀 MEXC Futures Bot Dashboard")
 
-pairs = get_usdt_pairs()
+try:
+    pairs = get_usdt_pairs()
 
-st.write("Pairs found:", len(pairs))
+    st.write("Pairs found:", len(pairs))
 
-results = []
+    if len(pairs) > 0:
+        st.write("First 10 pairs:")
+        st.write(pairs[:10])
 
-for symbol in pairs[:50]:
-    try:
-        df = get_klines(symbol)
+    results = []
 
-        score = score_signal(df)
+    # Speed အတွက် 50 ခုပဲ scan
+    for symbol in pairs[:50]:
+        try:
+            df = get_klines(symbol)
 
-        results.append((symbol, score))
+            if len(df) == 0:
+                continue
 
-    except Exception as e:
-        st.write(f"{symbol}: {e}")
+            score = score_signal(df)
 
-if results:
+            results.append({
+                "symbol": symbol,
+                "score": score
+            })
 
-    results.sort(
-        key=lambda x: x[1],
-        reverse=True
-    )
+        except Exception as e:
+            st.write(f"Error on {symbol}: {e}")
 
-    best = results[0]
+    st.write("Valid results:", len(results))
 
-    st.subheader("🏆 Best Coin")
+    if len(results) > 0:
 
-    st.write(best[0])
-    st.write("Score:", best[1])
+        results = sorted(
+            results,
+            key=lambda x: x["score"],
+            reverse=True
+        )
 
-    st.subheader("Top 10")
+        best = results[0]
 
-    for row in results[:10]:
-        st.write(row)
+        st.subheader("🏆 Best Coin")
+        st.write(best["symbol"])
+        st.write("Score:", best["score"])
 
-else:
-    st.error("No valid results")
+        st.subheader("📊 Top 10 Coins")
+
+        for row in results[:10]:
+            st.write(
+                f"{row['symbol']} | Score: {row['score']}"
+            )
+
+    else:
+        st.error("No valid results")
+
+except Exception as e:
+    st.error(f"App Error: {e}")
