@@ -1,12 +1,31 @@
 import streamlit as st
-import requests
+from data.market import get_usdt_pairs, get_klines
+from strategy.signal import score_signal
 
-url = "https://api.mexc.com/api/v3/exchangeInfo"
+st.title(" MEXC Futures Bot Dashboard")
 
-r = requests.get(url)
+pairs = get_usdt_pairs()
 
-st.write("Status:", r.status_code)
+st.write("Pairs found:", len(pairs))
 
-data = r.json()
+results = []
 
-st.write(data)
+for symbol in pairs[:10]:
+    try:
+        df = get_klines(symbol)
+        score = score_signal(df)
+        results.append((symbol, score))
+    except Exception as e:
+        st.write(f"Error {symbol}: {e}")
+
+st.write("Results count:", len(results))
+
+if len(results) > 0:
+    results.sort(key=lambda x: x[1], reverse=True)
+
+    best = results[0]
+
+    st.subheader(" Best Trade Candidate")
+    st.write(best)
+else:
+    st.error("No valid results found.")
