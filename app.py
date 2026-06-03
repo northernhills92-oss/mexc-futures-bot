@@ -1,15 +1,44 @@
-import requests
 import streamlit as st
+from data.market import get_usdt_pairs, get_klines
+from strategy.signal import score_signal
 
-data = requests.get(
-    "https://api.mexc.com/api/v3/exchangeInfo"
-).json()
+st.title("🚀 MEXC Futures Bot Dashboard")
 
-usdt_pairs = []
+pairs = get_usdt_pairs()
 
-for s in data["symbols"]:
-    if s.get("quoteAsset") == "USDT":
-        usdt_pairs.append(s["symbol"])
+st.write("Pairs found:", len(pairs))
 
-st.write("USDT pairs:", len(usdt_pairs))
-st.write(usdt_pairs[:20])
+results = []
+
+for symbol in pairs[:50]:
+    try:
+        df = get_klines(symbol)
+
+        score = score_signal(df)
+
+        results.append((symbol, score))
+
+    except Exception as e:
+        st.write(f"{symbol}: {e}")
+
+if results:
+
+    results.sort(
+        key=lambda x: x[1],
+        reverse=True
+    )
+
+    best = results[0]
+
+    st.subheader("🏆 Best Coin")
+
+    st.write(best[0])
+    st.write("Score:", best[1])
+
+    st.subheader("Top 10")
+
+    for row in results[:10]:
+        st.write(row)
+
+else:
+    st.error("No valid results")
