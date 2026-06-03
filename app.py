@@ -1,14 +1,10 @@
 import streamlit as st
-from data.market import get_usdt_pairs
+from data.market import get_klines
 
-st.title("🚀 MEXC Futures Bot Dashboard")
+st.title("🚀 Kline Test")
 
-pairs = get_usdt_pairs()
+df = get_klines("BTCUSDT")
 
-st.write("Pairs found:", len(pairs))
+st.write("Rows:", len(df))
 
-if pairs:
-    st.write("First 20 pairs:")
-    st.write(pairs[:20])
-else:
-    st.error("No pairs found")
+st.dataframe(df.tail())
