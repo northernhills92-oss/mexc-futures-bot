@@ -1,8 +1,30 @@
 import streamlit as st
+from data.market import get_usdt_pairs, get_klines
+from strategy.signal import score_signal
 
 st.title("🚀 MEXC Futures Bot Dashboard")
 
-st.write("Status: RUNNING")
-st.write("Mode: 15m Multi-USDT Scanner")
-st.write("Strategy: EMA + RSI + Score")
-st.write("Risk: 1% per trade")
+pairs = get_usdt_pairs()
+
+results = []
+
+for symbol in pairs[:20]:  # limit for speed
+    try:
+        df = get_klines(symbol)
+        score = score_signal(df)
+        results.append((symbol, score))
+    except:
+        continue
+
+results.sort(key=lambda x: x[1], reverse=True)
+
+best = results[0]
+
+st.subheader("🏆 Best Trade Candidate")
+st.write(best[0])
+st.write("Score:", best[1])
+
+st.subheader("📊 Top Signals")
+
+for r in results[:10]:
+    st.write(r)
